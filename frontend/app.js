@@ -16,7 +16,7 @@ document.getElementById('analyzeBtn').addEventListener('click', async () => {
 
     try {
         // We assume the backend is running locally on port 8000
-        const response = await fetch("http://localhost:8000/api/v1/analyze-email", {
+        const response = await fetch("https://fraudguard-backend-3ebf.onrender.com/api/v1/analyze-email", {
             method: "POST",
             body: formData
         });
