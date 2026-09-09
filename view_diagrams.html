@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FraudGuard AI - Presentation Diagrams</title>
+    <!-- Tailwind CSS for layout styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Mermaid.js for rendering the diagrams -->
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true, 
+            theme: 'default',
+            securityLevel: 'loose',
+            flowchart: { curve: 'basis' }
+        });
+    </script>
+</head>
+<body class="bg-white text-gray-800 p-8">
+
+    <div class="max-w-4xl mx-auto space-y-12">
+        
+        <div class="text-center">
+            <h1 class="text-3xl font-bold mb-2">SIH 2026 - Presentation Diagrams</h1>
+            <p class="text-gray-600">Take a screenshot of these diagrams using <b>Win + Shift + S</b> and paste them into your PowerPoint.</p>
+        </div>
+
+        <!-- Diagram 1 -->
+        <div class="bg-white p-6">
+            <h2 class="text-xl font-bold mb-4 border-b pb-2 text-blue-600">1. System Architecture (Put on Slide 3: Technical Approach)</h2>
+            <div class="flex justify-center bg-white p-4">
+                <pre class="mermaid">
+                    graph LR
+                        A[.eml Email] --> B(FastAPI)
+                        
+                        subgraph Processing Engine
+                            B --> C{Parser}
+                            C --> D[NLP Model]
+                            C --> E[Geo-Tracker]
+                            C --> F[SPF/DKIM]
+                        end
+                        
+                        D --> G((JSON Report))
+                        E --> G
+                        F --> G
+                        
+                        G --> H[(Neo4j DB)]
+                        G --> I[React Dashboard]
+                </pre>
+            </div>
+        </div>
+
+        <!-- Diagram 2 -->
+        <div class="bg-white p-6">
+            <h2 class="text-xl font-bold mb-4 border-b pb-2 text-blue-600">2. AI Threat Detection Workflow (Put on Slide 2: Idea)</h2>
+            <div class="flex justify-center bg-white p-4">
+                <pre class="mermaid">
+                    flowchart TD
+                        A[Body Text] --> B[TF-IDF Vectorizer]
+                        B --> C{ML Model}
+                        
+                        C -->|Prob > 70%| E[High Risk]
+                        C -->|Prob 40-70%| F[Mod Risk]
+                        
+                        A --> H[Regex Scanner]
+                        H --> I[Extract Urgency Cues]
+                        H --> J[Extract Finance Cues]
+                        
+                        E --> K[AI Report]
+                        I --> K
+                        J --> K
+                </pre>
+            </div>
+        </div>
+
+        <!-- Diagram 3 -->
+        <div class="bg-white p-6">
+            <h2 class="text-xl font-bold mb-4 border-b pb-2 text-blue-600">3. Traceability Graph (Put on Slide 5: Impact)</h2>
+            <div class="flex justify-center bg-white p-4">
+                <pre class="mermaid">
+                    graph TD
+                        style Hacker fill:#ef4444,stroke:#333,stroke-width:2px,color:#fff
+                        style Victim fill:#22c55e,stroke:#333,stroke-width:2px,color:#fff
+                        
+                        Hacker((Attacker)) -->|Sends Fake PayPal| IP1[IP: 176.113.115.150 <br> Moscow, Russia]
+                        IP1 -.->|Hosted On| ISP1{Cat Technologies ISP}
+                        
+                        IP1 -->|Routed via| IP2[IP: 45.33.32.156 <br> California, US]
+                        IP2 -.->|Hosted On| ISP2{Akamai Technologies}
+                        
+                        IP2 -->|Delivered To| Victim((Victim's Inbox))
+                        
+                        classDef tracking fill:#f97316,stroke:#fff,stroke-width:2px,color:#fff;
+                        class IP1,IP2 tracking;
+                </pre>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

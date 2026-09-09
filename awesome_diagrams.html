@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Awesome Presentation Diagrams</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .diagram-box {
+            @apply bg-white border-2 border-blue-200 rounded-xl p-4 shadow-lg flex flex-col items-center justify-center text-center transition-transform transform hover:scale-105;
+        }
+        .arrow-right {
+            @apply flex items-center justify-center text-blue-400 text-3xl mx-2;
+        }
+        .glow {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-white p-10 font-sans text-gray-800">
+
+    <div class="max-w-6xl mx-auto space-y-20">
+
+        <!-- AWESOME DIAGRAM 1: SYSTEM ARCHITECTURE -->
+        <div class="mb-10">
+            <h2 class="text-2xl font-extrabold text-blue-900 mb-8 border-b-4 border-blue-500 pb-2 inline-block">1. Core System Architecture</h2>
+            
+            <div class="flex items-center justify-center bg-white p-8 rounded-3xl flex-wrap gap-4">
+                
+                <!-- Ingestion -->
+                <div class="diagram-box border-red-300 w-40 h-40">
+                    <i class="fa-solid fa-envelope-open-text text-5xl text-red-500 mb-3"></i>
+                    <span class="font-bold text-gray-700">Raw .eml<br>Suspicious Email</span>
+                </div>
+
+                <div class="arrow-right"><i class="fa-solid fa-arrow-right"></i></div>
+
+                <!-- FastAPI Engine -->
+                <div class="diagram-box border-blue-500 w-48 h-56 glow bg-blue-50">
+                    <i class="fa-solid fa-server text-4xl text-blue-600 mb-2"></i>
+                    <span class="font-black text-blue-900 mb-2">FastAPI Backend</span>
+                    <ul class="text-xs text-left text-gray-600 space-y-1 w-full bg-white p-2 rounded border border-blue-200">
+                        <li><i class="fa-solid fa-check text-green-500 mr-1"></i> Header Parser</li>
+                        <li><i class="fa-solid fa-check text-green-500 mr-1"></i> NLP Scikit Model</li>
+                        <li><i class="fa-solid fa-check text-green-500 mr-1"></i> Geo-IP Tracker</li>
+                        <li><i class="fa-solid fa-check text-green-500 mr-1"></i> SPF/DKIM Auth</li>
+                    </ul>
+                </div>
+
+                <div class="arrow-right"><i class="fa-solid fa-arrow-right"></i></div>
+
+                <!-- Forensic Output -->
+                <div class="diagram-box border-green-400 w-40 h-40">
+                    <i class="fa-solid fa-file-code text-5xl text-green-500 mb-3"></i>
+                    <span class="font-bold text-gray-700">Consolidated<br>JSON Report</span>
+                </div>
+
+                <div class="arrow-right"><i class="fa-solid fa-arrow-right"></i></div>
+
+                <!-- Dashboard -->
+                <div class="flex flex-col space-y-4">
+                    <div class="diagram-box border-purple-400 w-48 py-3 flex-row justify-start pl-4">
+                        <i class="fa-solid fa-diagram-project text-2xl text-purple-500 mr-3"></i>
+                        <span class="font-bold text-sm">Neo4j Graph UI</span>
+                    </div>
+                    <div class="diagram-box border-teal-400 w-48 py-3 flex-row justify-start pl-4">
+                        <i class="fa-solid fa-map-location-dot text-2xl text-teal-500 mr-3"></i>
+                        <span class="font-bold text-sm">Live World Map</span>
+                    </div>
+                    <div class="diagram-box border-orange-400 w-48 py-3 flex-row justify-start pl-4">
+                        <i class="fa-solid fa-gauge-high text-2xl text-orange-500 mr-3"></i>
+                        <span class="font-bold text-sm">AI Risk Gauge</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- AWESOME DIAGRAM 2: AI WORKFLOW -->
+        <div class="mb-10">
+            <h2 class="text-2xl font-extrabold text-blue-900 mb-8 border-b-4 border-blue-500 pb-2 inline-block">2. AI Threat Detection Engine</h2>
+            
+            <div class="flex items-center justify-center bg-white p-8 rounded-3xl flex-wrap gap-4">
+                
+                <div class="diagram-box border-gray-400 w-32 h-32">
+                    <i class="fa-solid fa-align-left text-4xl text-gray-600 mb-2"></i>
+                    <span class="font-bold text-xs">Raw Body Text</span>
+                </div>
+
+                <div class="arrow-right"><i class="fa-solid fa-arrow-right"></i></div>
+
+                <!-- Math Processing -->
+                <div class="flex flex-col space-y-4 relative">
+                    <!-- ML Branch -->
+                    <div class="diagram-box border-indigo-400 w-56 flex-row">
+                        <i class="fa-solid fa-brain text-indigo-500 text-2xl mr-3"></i>
+                        <div class="text-left">
+                            <span class="font-bold text-xs block">1. TF-IDF Vectorizer</span>
+                            <span class="font-bold text-xs block">2. Logistic Regression</span>
+                        </div>
+                    </div>
+                    <!-- Rules Branch -->
+                    <div class="diagram-box border-pink-400 w-56 flex-row">
+                        <i class="fa-solid fa-magnifying-glass-chart text-pink-500 text-2xl mr-3"></i>
+                        <div class="text-left">
+                            <span class="font-bold text-xs block">Regex Rule Scanner</span>
+                            <span class="text-[10px] text-gray-500 block">Extracts: "Wire", "24 Hrs"</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arrow-right"><i class="fa-solid fa-arrow-right"></i></div>
+
+                <div class="diagram-box border-red-500 w-40 h-40 glow bg-red-50">
+                    <i class="fa-solid fa-triangle-exclamation text-5xl text-red-600 mb-2"></i>
+                    <span class="font-black text-red-700 text-lg">78% FRAUD</span>
+                    <span class="font-bold text-xs text-red-500">High Risk Flag</span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- AWESOME DIAGRAM 3: END-TO-END EXECUTION FLOW -->
+        <div class="mb-10">
+            <h2 class="text-2xl font-extrabold text-blue-900 mb-8 border-b-4 border-blue-500 pb-2 inline-block">3. End-to-End Execution Flow</h2>
+            
+            <div class="flex items-center justify-center bg-white p-8 rounded-3xl flex-wrap gap-4">
+                
+                <div class="diagram-box border-gray-300 w-40 h-32">
+                    <i class="fa-solid fa-user-shield text-3xl text-gray-500 mb-2"></i>
+                    <span class="font-bold text-xs">Security Analyst<br>Uploads .eml</span>
+                </div>
+
+                <div class="arrow-right"><i class="fa-solid fa-arrow-right"></i></div>
+
+                <div class="diagram-box border-yellow-400 w-40 h-32 bg-yellow-50">
+                    <i class="fa-solid fa-file-invoice text-3xl text-yellow-600 mb-2"></i>
+                    <span class="font-bold text-xs text-yellow-800">1. Parse Metadata<br>(SPF/DKIM/Headers)</span>
+                </div>
+
+                <div class="arrow-right"><i class="fa-solid fa-arrow-right"></i></div>
+
+                <div class="diagram-box border-blue-400 w-40 h-32 bg-blue-50">
+                    <i class="fa-solid fa-globe text-3xl text-blue-600 mb-2"></i>
+                    <span class="font-bold text-xs text-blue-800">2. IP Traceability<br>& GeoLocation</span>
+                </div>
+
+                <div class="arrow-right"><i class="fa-solid fa-arrow-right"></i></div>
+
+                <div class="diagram-box border-purple-400 w-40 h-32 bg-purple-50">
+                    <i class="fa-solid fa-robot text-3xl text-purple-600 mb-2"></i>
+                    <span class="font-bold text-xs text-purple-800">3. AI NLP Analysis<br>& Fraud Scoring</span>
+                </div>
+
+                <div class="arrow-right"><i class="fa-solid fa-arrow-right"></i></div>
+
+                <div class="diagram-box border-green-500 w-40 h-32 glow bg-green-50">
+                    <i class="fa-solid fa-table-columns text-3xl text-green-600 mb-2"></i>
+                    <span class="font-bold text-xs text-green-800">Final Dashboard<br>Forensic Report</span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- AWESOME DIAGRAM 4: ORIGIN TRACEABILITY WORKFLOW -->
+        <div class="mb-10">
+            <h2 class="text-2xl font-extrabold text-blue-900 mb-8 border-b-4 border-blue-500 pb-2 inline-block">4. Origin Traceability & Attribution Workflow</h2>
+            
+            <div class="flex items-center justify-center bg-white p-8 rounded-3xl flex-wrap gap-4">
+                
+                <div class="diagram-box border-orange-400 w-44 h-32 bg-orange-50">
+                    <i class="fa-solid fa-network-wired text-3xl text-orange-600 mb-2"></i>
+                    <span class="font-bold text-xs text-orange-800">Extract "Received"<br>Routing Headers</span>
+                </div>
+
+                <div class="arrow-right"><i class="fa-solid fa-arrow-right"></i></div>
+
+                <div class="diagram-box border-gray-400 w-44 h-32">
+                    <i class="fa-solid fa-code text-3xl text-gray-600 mb-2"></i>
+                    <span class="font-bold text-xs">Regex Filter:<br>Drop Internal IPs</span>
+                </div>
+
+                <div class="arrow-right"><i class="fa-solid fa-arrow-right"></i></div>
+
+                <div class="diagram-box border-blue-500 w-44 h-32 glow bg-blue-50">
+                    <i class="fa-solid fa-satellite-dish text-3xl text-blue-600 mb-2"></i>
+                    <span class="font-bold text-xs text-blue-800">Query Global<br>GeoIP Database</span>
+                </div>
+
+                <div class="arrow-right"><i class="fa-solid fa-arrow-right"></i></div>
+
+                <!-- Two output nodes -->
+                <div class="flex flex-col space-y-4">
+                    <div class="diagram-box border-red-400 w-48 py-3 flex-row justify-start pl-4">
+                        <i class="fa-solid fa-location-crosshairs text-2xl text-red-500 mr-3"></i>
+                        <span class="font-bold text-xs">Pinpoint City/Country</span>
+                    </div>
+                    <div class="diagram-box border-teal-400 w-48 py-3 flex-row justify-start pl-4">
+                        <i class="fa-solid fa-server text-2xl text-teal-500 mr-3"></i>
+                        <span class="font-bold text-xs">Identify Hosting ISP</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

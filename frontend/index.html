@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FraudGuard AI Dashboard</title>
+    <!-- Use Tailwind CSS via CDN for rapid styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Leaflet.js for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Vis.js for Graph Correlation -->
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+</head>
+<body class="bg-gray-900 text-white font-sans min-h-screen">
+    
+    <!-- Navbar -->
+    <nav class="bg-gray-800 border-b border-gray-700 p-4">
+        <div class="container mx-auto flex items-center">
+            <i class="fa-solid fa-shield-halved text-blue-500 text-2xl mr-3"></i>
+            <h1 class="text-xl font-bold tracking-wider">FraudGuard <span class="text-blue-500">AI</span></h1>
+            <span class="ml-4 text-xs bg-blue-900 text-blue-200 px-2 py-1 rounded-full">PS-106 Forensic Platform</span>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-6 max-w-6xl">
+        
+        <!-- Upload Section -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-8 border border-gray-700 shadow-lg">
+            <h2 class="text-xl font-semibold mb-4"><i class="fa-solid fa-file-import mr-2"></i>Ingest Suspicious Email</h2>
+            <div class="flex items-center gap-4">
+                <input type="file" id="emailFileInput" accept=".eml" class="block w-full text-sm text-gray-400
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-blue-600 file:text-white
+                    hover:file:bg-blue-700 cursor-pointer"/>
+                <button id="analyzeBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded shadow transition duration-200">
+                    <i class="fa-solid fa-magnifying-glass mr-2"></i>Analyze
+                </button>
+            </div>
+            <div id="loadingIndicator" class="hidden mt-4 text-blue-400">
+                <i class="fa-solid fa-spinner fa-spin mr-2"></i>Running AI forensic analysis...
+            </div>
+        </div>
+
+        <!-- Results Dashboard (Hidden by default) -->
+        <div id="resultsDashboard" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <!-- Left Column: AI Score & Metadata -->
+            <div class="md:col-span-1 space-y-6">
+                <!-- AI Fraud Score -->
+                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 text-center shadow-lg">
+                    <h3 class="text-gray-400 text-sm uppercase tracking-wider mb-2">AI Fraud Confidence</h3>
+                    <div class="text-5xl font-bold mb-2" id="fraudScoreVal">0%</div>
+                    <div id="riskBadge" class="inline-block px-3 py-1 rounded-full text-sm font-bold bg-red-900 text-red-300 border border-red-700">
+                        HIGH RISK
+                    </div>
+                </div>
+
+                <!-- Extracted Indicators -->
+                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 shadow-lg">
+                    <h3 class="text-gray-400 text-sm uppercase tracking-wider mb-4"><i class="fa-solid fa-flag text-yellow-500 mr-2"></i>Detected Flags</h3>
+                    <ul id="flagsList" class="space-y-2 text-sm">
+                        <!-- Populated via JS -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Middle/Right Column: Details & Geo -->
+            <div class="md:col-span-2 space-y-6">
+                <!-- Header & Auth Info -->
+                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 shadow-lg grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2"><i class="fa-solid fa-envelope text-gray-400 mr-2"></i>Email Metadata</h3>
+                        <div class="grid grid-cols-4 gap-2 text-sm">
+                            <div class="col-span-1 text-gray-400">From:</div>
+                            <div class="col-span-3 font-mono text-red-400" id="metaFrom">-</div>
+                            <div class="col-span-1 text-gray-400">To:</div>
+                            <div class="col-span-3 font-mono" id="metaTo">-</div>
+                            <div class="col-span-1 text-gray-400">Subject:</div>
+                            <div class="col-span-3 font-bold" id="metaSubject">-</div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2"><i class="fa-solid fa-shield-virus text-blue-400 mr-2"></i>Authentication & WHOIS</h3>
+                        <div class="grid grid-cols-4 gap-2 text-sm mb-2">
+                            <div class="col-span-1 text-gray-400">SPF/DKIM:</div>
+                            <div class="col-span-3" id="authStatus">-</div>
+                            <div class="col-span-1 text-gray-400">Registrar:</div>
+                            <div class="col-span-3" id="whoisRegistrar">-</div>
+                            <div class="col-span-1 text-gray-400">Created:</div>
+                            <div class="col-span-3" id="whoisCreated">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Traceability Map -->
+                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 shadow-lg">
+                    <h3 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2"><i class="fa-solid fa-globe text-green-500 mr-2"></i>Origin Traceability (IP Hops & VPN Checks)</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="text-xs text-gray-400 uppercase bg-gray-700">
+                                <tr>
+                                    <th class="px-4 py-2 rounded-tl">IP Address</th>
+                                    <th class="px-4 py-2">Location</th>
+                                    <th class="px-4 py-2">ISP / Org</th>
+                                    <th class="px-4 py-2 rounded-tr">Infrastructure</th>
+                                </tr>
+                            </thead>
+                            <tbody id="geoTableBody">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Body Preview -->
+                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 shadow-lg">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-sm uppercase tracking-wider text-gray-400">Raw Body Preview</h3>
+                        <span class="text-xs bg-green-900 text-green-300 px-2 py-1 rounded border border-green-700"><i class="fa-solid fa-lock mr-1"></i>PII Masking Active</span>
+                    </div>
+                    <pre id="bodyPreview" class="bg-gray-900 p-4 rounded text-xs text-gray-300 overflow-x-auto whitespace-pre-wrap"></pre>
+                </div>
+            </div>
+            
+            <!-- Full Width Row: Map & Graph -->
+            <div class="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
+                <!-- Map -->
+                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 shadow-lg">
+                    <h3 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2"><i class="fa-solid fa-map-location-dot text-blue-400 mr-2"></i>Live Geo-Trace Map</h3>
+                    <div id="map" style="height: 350px; z-index: 1;" class="rounded border border-gray-700"></div>
+                </div>
+                
+                <!-- Graph -->
+                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 shadow-lg">
+                    <h3 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2"><i class="fa-solid fa-diagram-project text-purple-400 mr-2"></i>Attribution Graph (Domain -> IP)</h3>
+                    <div id="networkGraph" style="height: 350px;" class="rounded bg-gray-900 border border-gray-700"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

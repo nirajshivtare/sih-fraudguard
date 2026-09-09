@@ -1,0 +1,29 @@
+Delivered-To: victim@example.com
+Received: by 10.12.34.56 with SMTP id xyz123;
+        Wed, 09 Sep 2026 09:30:00 -0700 (PDT)
+Return-Path: <admin@paypal-update-security.com>
+Received: from mail.paypal-update-security.com (mail.paypal-update-security.com. [192.168.1.100])
+        by mx.google.com with ESMTPS id abc456
+        for <victim@example.com>;
+        Wed, 09 Sep 2026 09:30:00 -0700 (PDT)
+Received: from [10.0.0.5] (unknown [198.51.100.42])
+        by mail.paypal-update-security.com with SMTP id def789
+        for <victim@example.com>; Wed, 09 Sep 2026 16:29:58 +0000 (UTC)
+From: "PayPal Security" <admin@paypal-update-security.com>
+To: victim@example.com
+Subject: URGENT: Your account has been suspended
+Date: Wed, 09 Sep 2026 16:29:58 +0000
+Message-ID: <1234567890@paypal-update-security.com>
+Content-Type: text/plain; charset="utf-8"
+
+Dear Customer,
+
+We have noticed unusual activity on your PayPal account. 
+To prevent permanent suspension, please click the link below to verify your identity within 24 hours.
+
+http://www.paypal-update-security.com/login?token=abc123xyz
+
+Failure to do so will result in immediate account closure.
+
+Sincerely,
+PayPal Security Team
