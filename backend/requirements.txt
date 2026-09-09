@@ -4,3 +4,7 @@ pydantic
 dkimpy
 dnspython
 python-multipart
+scikit-learn
+joblib
+httpx
+python-whois
