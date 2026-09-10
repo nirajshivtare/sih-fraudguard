@@ -29,8 +29,8 @@ document.getElementById('analyzeBtn').addEventListener('click', async () => {
         populateDashboard(data);
 
     } catch (error) {
-        console.error("Error analyzing email:", error);
-        alert("Failed to analyze email. Is the FastAPI backend running on port 8000?");
+        document.getElementById('loadingIndicator').classList.add('hidden');
+        alert("Error analyzing email: " + error.message);
     } finally {
         // Hide loading
         document.getElementById('loadingIndicator').classList.add('hidden');
@@ -38,70 +38,85 @@ document.getElementById('analyzeBtn').addEventListener('click', async () => {
 });
 
 function populateDashboard(data) {
-    // 1. AI Score
-    const score = data.ai_analysis.fraud_score;
-    const scoreEl = document.getElementById('fraudScoreVal');
-    const badgeEl = document.getElementById('riskBadge');
+    // 1. Fraud Risk Score & Origin Confidence
+    const riskScore = data.scoring.fraud_risk.score;
+    const originScore = data.scoring.origin_confidence.score;
     
-    scoreEl.innerText = `${score}%`;
+    document.getElementById('fraudScoreVal').innerText = `${riskScore}%`;
+    document.getElementById('originScoreVal').innerText = `${originScore}%`;
     
-    if (score > 70) {
-        scoreEl.className = "text-5xl font-bold mb-2 text-red-500";
-        badgeEl.className = "inline-block px-3 py-1 rounded-full text-sm font-bold bg-red-900 text-red-200 border border-red-700";
-        badgeEl.innerText = "HIGH RISK";
-    } else if (score > 40) {
-        scoreEl.className = "text-5xl font-bold mb-2 text-yellow-500";
-        badgeEl.className = "inline-block px-3 py-1 rounded-full text-sm font-bold bg-yellow-900 text-yellow-200 border border-yellow-700";
-        badgeEl.innerText = "MODERATE RISK";
+    const riskBadge = document.getElementById('riskBadge');
+    if (riskScore > 75) {
+        riskBadge.className = "inline-block px-3 py-1 rounded-full text-sm font-bold bg-red-900 text-red-200 border border-red-700";
+        riskBadge.innerText = "CRITICAL RISK";
+    } else if (riskScore > 50) {
+        riskBadge.className = "inline-block px-3 py-1 rounded-full text-sm font-bold bg-orange-900 text-orange-200 border border-orange-700";
+        riskBadge.innerText = "HIGH RISK";
+    } else if (riskScore > 20) {
+        riskBadge.className = "inline-block px-3 py-1 rounded-full text-sm font-bold bg-yellow-900 text-yellow-200 border border-yellow-700";
+        riskBadge.innerText = "MEDIUM RISK";
     } else {
-        scoreEl.className = "text-5xl font-bold mb-2 text-green-500";
-        badgeEl.className = "inline-block px-3 py-1 rounded-full text-sm font-bold bg-green-900 text-green-200 border border-green-700";
-        badgeEl.innerText = "LOW RISK";
+        riskBadge.className = "inline-block px-3 py-1 rounded-full text-sm font-bold bg-green-900 text-green-200 border border-green-700";
+        riskBadge.innerText = "LOW RISK";
     }
 
-    // 2. Flags
+    // 2. Evidence Flags (Why this score?)
     const flagsList = document.getElementById('flagsList');
     flagsList.innerHTML = "";
     
-    const urgency = data.ai_analysis.detected_flags.urgency_cues || [];
-    urgency.forEach(cue => {
-        flagsList.innerHTML += `<li class="bg-gray-700 p-2 rounded"><span class="text-red-400 font-bold mr-2">[URGENCY]</span>"${cue}"</li>`;
+    data.scoring.fraud_risk.evidence_risk.forEach(cue => {
+        flagsList.innerHTML += `<li class="bg-red-900/50 p-2 rounded text-red-300 font-medium text-sm">${cue}</li>`;
+    });
+    data.scoring.fraud_risk.evidence_trust.forEach(cue => {
+        flagsList.innerHTML += `<li class="bg-green-900/50 p-2 rounded text-green-300 font-medium text-sm">${cue}</li>`;
+    });
+    data.scoring.origin_confidence.evidence.forEach(cue => {
+        flagsList.innerHTML += `<li class="bg-blue-900/50 p-2 rounded text-blue-300 font-medium text-sm">${cue}</li>`;
     });
 
-    const financial = data.ai_analysis.detected_flags.financial_cues || [];
-    financial.forEach(cue => {
-        flagsList.innerHTML += `<li class="bg-gray-700 p-2 rounded"><span class="text-yellow-400 font-bold mr-2">[FINANCIAL]</span>"${cue}"</li>`;
-    });
-    
-    if (urgency.length === 0 && financial.length === 0) {
-        flagsList.innerHTML = `<li class="text-gray-500 italic">No explicit threats detected by NLP.</li>`;
-    }
-
-    // 3. Metadata
+    // 3. Metadata & Case ID
     document.getElementById('metaFrom').innerText = data.metadata.from;
     document.getElementById('metaTo').innerText = data.metadata.to;
     document.getElementById('metaSubject').innerText = data.metadata.subject;
+    
+    // Add Case info
+    document.getElementById('caseIdBadge').innerText = "CASE ID: " + data.case_id;
 
-    // 3.5 Authentication & WHOIS
+    // 4. Authentication Validation & Alignment
     const authStatusEl = document.getElementById('authStatus');
-    if (data.authentication.is_forged) {
-        authStatusEl.innerHTML = `<span class="text-red-500 font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i>FAILED (SPOOFED)</span>`;
-    } else {
-        authStatusEl.innerHTML = `<span class="text-green-500 font-bold"><i class="fa-solid fa-check-circle mr-1"></i>PASSED</span>`;
-    }
+    authStatusEl.innerHTML = `
+        <div class="text-xs space-y-1">
+            <div>SPF: <span class="font-bold">${data.authentication.spf}</span></div>
+            <div>DKIM: <span class="font-bold">${data.authentication.dkim}</span></div>
+            <div>DMARC: <span class="font-bold">${data.authentication.dmarc}</span></div>
+            <div>Alignment: <span class="font-bold text-yellow-400">${data.authentication.alignment}</span></div>
+        </div>
+    `;
 
+    // 5. Domain Intelligence
     if (data.domain_intelligence.status === "success") {
         document.getElementById('whoisRegistrar').innerText = data.domain_intelligence.registrar;
         document.getElementById('whoisCreated').innerText = data.domain_intelligence.creation_date;
         if (data.domain_intelligence.is_suspicious) {
-            document.getElementById('whoisCreated').innerHTML += ` <span class="text-red-500 font-bold text-xs bg-red-900 px-1 rounded">NEW DOMAIN</span>`;
+            document.getElementById('whoisCreated').innerHTML += ` <span class="text-red-500 font-bold text-[10px] bg-red-900 px-1 rounded ml-1">NEW DOMAIN</span>`;
         }
     } else {
-        document.getElementById('whoisRegistrar').innerText = "Unknown / Hidden";
-        document.getElementById('whoisCreated').innerText = "Unknown / Hidden";
+        document.getElementById('whoisRegistrar').innerText = "DATA UNAVAILABLE";
+        document.getElementById('whoisCreated').innerText = "DATA UNAVAILABLE";
     }
 
-    // 4. GeoLocation Traceability & VPN Checks
+    // 6. IOCs
+    const iocList = document.getElementById('iocList');
+    iocList.innerHTML = "";
+    if (data.iocs.urls.length > 0) {
+        data.iocs.urls.forEach(url => {
+            iocList.innerHTML += `<div class="text-xs break-words mb-1 text-blue-400">[URL] ${url}</div>`;
+        });
+    } else {
+        iocList.innerHTML = `<div class="text-xs text-gray-500 italic">No suspicious IOCs extracted</div>`;
+    }
+
+    // 7. GeoLocation Traceability & Infrastructure
     const geoTable = document.getElementById('geoTableBody');
     geoTable.innerHTML = "";
     
@@ -109,33 +124,35 @@ function populateDashboard(data) {
         let tr = document.createElement('tr');
         tr.className = "border-b border-gray-700 hover:bg-gray-700 transition";
         
-        // Mock a VPN/TOR check for public IPs to satisfy the prompt requirement
-        let isVpn = (trace.isp && (trace.isp.toLowerCase().includes('vpn') || trace.isp.toLowerCase().includes('proxy') || trace.isp.toLowerCase().includes('tor')));
-        let infraBadge = isVpn ? `<span class="bg-red-900 border border-red-700 text-red-300 text-xs px-2 py-1 rounded"><i class="fa-solid fa-user-secret mr-1"></i>ANONYMIZED (VPN/TOR)</span>` : `<span class="bg-green-900 border border-green-700 text-green-300 text-xs px-2 py-1 rounded">Public / Direct</span>`;
-
         if (trace.status === "private") {
             tr.innerHTML = `
                 <td class="px-4 py-3 font-mono text-gray-400">${trace.ip}</td>
                 <td class="px-4 py-3 text-gray-500 italic">Internal Network</td>
                 <td class="px-4 py-3 text-gray-500">-</td>
-                <td class="px-4 py-3"><span class="bg-gray-600 text-xs px-2 py-1 rounded text-white">Private Router</span></td>
+                <td class="px-4 py-3"><span class="bg-gray-600 text-[10px] px-2 py-1 rounded text-white">Private Router</span></td>
             `;
         } else if (trace.status === "success") {
+            let isVpn = trace.infrastructure_type !== "Unknown";
+            let infraBadge = isVpn ? `<span class="bg-yellow-900 border border-yellow-700 text-yellow-300 text-[10px] px-2 py-1 rounded"><i class="fa-solid fa-cloud mr-1"></i>${trace.infrastructure_type}</span>` : `<span class="bg-green-900 border border-green-700 text-green-300 text-[10px] px-2 py-1 rounded">Direct / ISP</span>`;
+            
             tr.innerHTML = `
                 <td class="px-4 py-3 font-mono text-blue-400">${trace.ip}</td>
-                <td class="px-4 py-3"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i> ${trace.city}, ${trace.country}</td>
-                <td class="px-4 py-3">${trace.isp || 'Unknown'}</td>
+                <td class="px-4 py-3"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i> ${trace.probable_city}, ${trace.probable_country}</td>
+                <td class="px-4 py-3 text-xs">${trace.isp || 'Unknown'}</td>
                 <td class="px-4 py-3">${infraBadge}</td>
             `;
         }
         geoTable.appendChild(tr);
     });
 
-    // 5. Body Preview
+    // 8. Body Preview
     document.getElementById('bodyPreview').innerText = data.raw_body_preview;
 
     // Show Dashboard
     document.getElementById('resultsDashboard').classList.remove('hidden');
+    document.getElementById('downloadReportBtn').classList.remove('hidden');
+
+    currentReportData = data;
 
     // Render Visuals
     renderMap(data.origin_traceability);
@@ -162,7 +179,7 @@ function renderMap(geoData) {
     geoData.forEach(geo => {
         if (geo.status === 'success' && geo.latitude && geo.longitude) {
             let marker = L.marker([geo.latitude, geo.longitude])
-                .bindPopup(`<b style="color:black;">IP: ${geo.ip}</b><br><span style="color:black;">${geo.city}, ${geo.country}</span>`);
+                .bindPopup(`<b style="color:black;">Observed IP: ${geo.ip}</b><br><span style="color:black;">Probable Location: ${geo.probable_city}, ${geo.probable_country}</span>`);
             markerLayer.addLayer(marker);
             lastValidCoord = [geo.latitude, geo.longitude];
         }
@@ -176,6 +193,43 @@ function renderMap(geoData) {
         }, 100);
     }
 }
+
+// --- Download Report Logic ---
+let currentReportData = null;
+
+document.getElementById('downloadReportBtn').addEventListener('click', () => {
+    if (!currentReportData) return;
+    
+    let reportText = `FRAUDGUARD AI - EMAIL FORENSIC REPORT\n`;
+    reportText += `=====================================\n\n`;
+    reportText += `CASE ID: ${currentReportData.case_id}\n`;
+    reportText += `EVIDENCE SHA-256: ${currentReportData.evidence.sha256}\n\n`;
+    
+    reportText += `--- 1. SCORING ---\n`;
+    reportText += `FRAUD RISK: ${currentReportData.scoring.fraud_risk.score}% (${currentReportData.scoring.fraud_risk.level})\n`;
+    reportText += `ORIGIN CONFIDENCE: ${currentReportData.scoring.origin_confidence.score}%\n\n`;
+    
+    reportText += `--- 2. AUTHENTICATION & ALIGNMENT ---\n`;
+    reportText += `SPF: ${currentReportData.authentication.spf}\n`;
+    reportText += `DKIM: ${currentReportData.authentication.dkim}\n`;
+    reportText += `DMARC: ${currentReportData.authentication.dmarc}\n`;
+    reportText += `Alignment: ${currentReportData.authentication.alignment}\n\n`;
+    
+    reportText += `--- 3. THREAT INTELLIGENCE ---\n`;
+    reportText += `Signals: ${JSON.stringify(currentReportData.scoring.fraud_risk.evidence_risk)}\n\n`;
+    
+    reportText += `--- 4. IOCs ---\n`;
+    reportText += `Domains: ${currentReportData.iocs.domains.join(", ")}\n`;
+    reportText += `IPs: ${currentReportData.routing.extracted_ips.join(", ")}\n\n`;
+    
+    const blob = new Blob([reportText], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Forensic_Report_${currentReportData.case_id}.txt`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+});
 
 // --- Graph Logic ---
 let network = null;

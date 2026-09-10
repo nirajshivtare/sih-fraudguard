@@ -1,0 +1,30 @@
+Return-Path: <bounces+1234567-890a-user=domain.com@sendgrid.net>
+Received: from o1.email.openai.com (o1.email.openai.com. [159.183.121.41])
+        by mx.google.com with ESMTPS id u21si1234567qki.123.2026.09.10.10.00.00
+        for <user@domain.com>;
+        Thu, 10 Sep 2026 10:00:00 -0700 (PDT)
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@email.openai.com header.s=s1 header.b=abcde;
+       spf=pass (google.com: domain of bounces@sendgrid.net designates 159.183.121.41 as permitted sender) smtp.mailfrom=bounces@sendgrid.net;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=email.openai.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=email.openai.com;
+	h=content-type:from:mime-version:subject:to:cc:content-type:from:
+	subject:to;
+	s=s1; bh=abcdefg=;
+	b=hijklmnop=
+From: ChatGPT <noreply@email.openai.com>
+To: user@domain.com
+Subject: Meet our newest plan: ChatGPT Go
+Message-ID: <1234567890.abcdef@sendgrid.net>
+Date: Thu, 10 Sep 2026 17:00:00 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
+
+Hi there,
+
+We're excited to announce ChatGPT Go, our newest plan designed for fast, everyday tasks.
+Upgrade today to get prioritized access and faster response times.
+
+Log in to your account at https://chat.openai.com/ to learn more.
+
+Best,
+The OpenAI Team

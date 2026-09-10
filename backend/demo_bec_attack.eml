@@ -1,0 +1,31 @@
+Delivered-To: finance@yourcompany.com
+Received: by 10.220.100.15 with SMTP id z15csp1234567;
+        Thu, 10 Sep 2026 09:12:45 -0700 (PDT)
+Received: from mail.awslondonrelay.com (mail.awslondonrelay.com. [3.8.10.15])
+        by mx.google.com with ESMTPS id q18si8845620ljg.12.2026.09.10.09.12.44
+        for <finance@yourcompany.com>;
+        Thu, 10 Sep 2026 09:12:44 -0700 (PDT)
+Received: from unknown-origin.net (unknown-origin.net. [102.132.222.12])
+        by mail.awslondonrelay.com with SMTP id 84562;
+        Thu, 10 Sep 2026 16:12:30 +0000 (UTC)
+Authentication-Results: mx.google.com;
+       dkim=fail header.i=@ceo-yourcompany-secure.com header.s=main;
+       spf=fail (google.com: domain of ceo@ceo-yourcompany-secure.com does not designate 3.8.10.15 as permitted sender) smtp.mailfrom=ceo@ceo-yourcompany-secure.com;
+       dmarc=fail (p=NONE sp=NONE dis=NONE) header.from=ceo-yourcompany-secure.com
+Message-ID: <001a11413a967a123405789b@ceo-yourcompany-secure.com>
+Date: Thu, 10 Sep 2026 17:12:15 +0100
+From: "CEO - Confidential" <ceo@ceo-yourcompany-secure.com>
+To: "CFO" <finance@yourcompany.com>
+Subject: URGENT: Wire Transfer Required - Project Phoenix
+Content-Type: text/plain; charset="UTF-8"
+
+Hi team,
+
+I am currently in an incredibly important board meeting with our new international vendors. 
+
+We need to finalize the acquisition for Project Phoenix immediately. Please initiate a wire transfer for the invoice amount of $145,000 to the offshore account provided below.
+
+This is highly urgent. The transfer must be completed within 24 hours or we will lose the contract entirely. Do not call me, as my phone is turned off for the meeting. Just reply to this email when the wire is complete.
+
+Best,
+CEO

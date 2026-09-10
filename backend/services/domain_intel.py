@@ -2,35 +2,28 @@ import whois
 import re
 
 def get_domain_from_email(email_address: str) -> str:
-    """Extracts the domain from an email address string."""
-    match = re.search(r'@([\w.-]+)', email_address)
+    match = re.search(r'@([\w.-]+)', str(email_address))
     return match.group(1) if match else None
 
 def analyze_domain(email_from: str) -> dict:
-    """
-    Performs a WHOIS lookup on the sender's domain to extract registration intelligence.
-    Useful for identifying newly registered domains (common in phishing).
-    """
     domain = get_domain_from_email(email_from)
     if not domain:
-        return {"status": "error", "message": "Could not extract domain"}
+        return {"status": "error", "message": "DATA UNAVAILABLE"}
         
     try:
         w = whois.whois(domain)
         
-        # WHOIS data can be messy, some fields might be lists
-        registrar = w.registrar if isinstance(w.registrar, str) else w.registrar[0] if w.registrar else "Unknown"
+        registrar = w.registrar if isinstance(w.registrar, str) else w.registrar[0] if w.registrar else "DATA UNAVAILABLE"
         creation_date = w.creation_date
         
         if isinstance(creation_date, list):
             creation_date = creation_date[0]
             
-        creation_str = creation_date.strftime("%Y-%m-%d") if creation_date else "Unknown"
+        creation_str = creation_date.strftime("%Y-%m-%d") if hasattr(creation_date, 'strftime') else "DATA UNAVAILABLE"
         
-        # Simple heuristic: If domain is very new (e.g. 2026), flag it
         is_suspicious = False
         if creation_date and hasattr(creation_date, 'year'):
-            if creation_date.year >= 2024: # Just an example heuristic
+            if creation_date.year >= 2025: # Recent
                 is_suspicious = True
                 
         return {
@@ -39,7 +32,7 @@ def analyze_domain(email_from: str) -> dict:
             "registrar": registrar,
             "creation_date": creation_str,
             "is_suspicious": is_suspicious,
-            "country": w.country
+            "country": w.country or "DATA UNAVAILABLE"
         }
     except Exception as e:
-        return {"status": "error", "domain": domain, "message": str(e)}
+        return {"status": "error", "domain": domain, "message": "DATA UNAVAILABLE"}
