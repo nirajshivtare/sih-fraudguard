@@ -1,18 +1,23 @@
 import re
 import urllib.parse
+import tldextract
 
 def get_base_domain(email_address: str) -> str:
     match = re.search(r'@([\w.-]+)', str(email_address))
     return match.group(1).lower() if match else ""
 
+def get_organizational_domain(domain: str) -> str:
+    ext = tldextract.extract(domain)
+    return f"{ext.domain}.{ext.suffix}" if ext.suffix else ext.domain
+
 def validate_email_auth(auth_header: str, from_header: str, return_path: str) -> dict:
-    if not auth_header or auth_header == "Unavailable":
+    if not auth_header or auth_header == "Not present":
         return {
             "spf": "UNAVAILABLE",
             "dkim": "UNAVAILABLE",
             "dmarc": "UNAVAILABLE",
             "alignment": "UNKNOWN",
-            "is_forged": False # Absence of auth does not guarantee forgery
+            "is_forged": False
         }
 
     spf_status = "NONE"
@@ -21,7 +26,6 @@ def validate_email_auth(auth_header: str, from_header: str, return_path: str) ->
     
     auth_lower = auth_header.lower()
 
-    # Extract strict statuses
     spf_match = re.search(r'spf=(pass|fail|softfail|neutral|none|temperror|permerror)', auth_lower)
     dkim_match = re.search(r'dkim=(pass|fail|none|error)', auth_lower)
     dmarc_match = re.search(r'dmarc=(pass|fail|none|error)', auth_lower)
@@ -34,15 +38,17 @@ def validate_email_auth(auth_header: str, from_header: str, return_path: str) ->
     from_domain = get_base_domain(from_header)
     return_path_domain = get_base_domain(return_path)
     
-    # Simple alignment check (From vs Return-Path)
     alignment = "UNKNOWN"
     if from_domain and return_path_domain:
+        from_org = get_organizational_domain(from_domain)
+        return_org = get_organizational_domain(return_path_domain)
+        
         if from_domain == return_path_domain:
-            alignment = "GOOD ALIGNMENT"
-        elif from_domain in return_path_domain or return_path_domain in from_domain:
-            alignment = "PARTIAL ALIGNMENT" # e.g. mail.domain.com vs domain.com
+            alignment = f"EXACT MATCH ({from_domain})"
+        elif from_org == return_org:
+            alignment = f"ORGANIZATIONAL ALIGNMENT ({from_org})"
         else:
-            alignment = "MISALIGNMENT"
+            alignment = f"MISALIGNMENT (From: {from_domain} != Return: {return_path_domain})"
 
     # Forgery is only highly probable on hard fails
     is_forged = False
@@ -56,3 +62,4 @@ def validate_email_auth(auth_header: str, from_header: str, return_path: str) ->
         "alignment": alignment,
         "is_forged": is_forged
     }
+

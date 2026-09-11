@@ -78,6 +78,10 @@ function populateDashboard(data) {
     document.getElementById('metaFrom').innerText = data.metadata.from;
     document.getElementById('metaTo').innerText = data.metadata.to;
     document.getElementById('metaSubject').innerText = data.metadata.subject;
+    document.getElementById('metaMsgId').innerText = data.metadata.message_id || "Not present";
+    document.getElementById('metaReturn').innerText = data.metadata.return_path || "Not present";
+    document.getElementById('metaMailer').innerText = data.metadata.x_mailer || "Not present";
+    document.getElementById('metaOrigIp').innerText = data.metadata.x_originating_ip || "Not present";
     
     // Add Case info
     document.getElementById('caseIdBadge').innerText = "CASE ID: " + data.case_id;
@@ -105,15 +109,31 @@ function populateDashboard(data) {
         document.getElementById('whoisCreated').innerText = "DATA UNAVAILABLE";
     }
 
-    // 6. IOCs
-    const iocList = document.getElementById('iocList');
-    iocList.innerHTML = "";
-    if (data.iocs.urls.length > 0) {
-        data.iocs.urls.forEach(url => {
-            iocList.innerHTML += `<div class="text-xs break-words mb-1 text-blue-400">[URL] ${url}</div>`;
+    // 6. IOC Table Population
+    const iocTable = document.getElementById('iocTableBody');
+    iocTable.innerHTML = "";
+    
+    if (data.iocs.urls && data.iocs.urls.length > 0) {
+        data.iocs.urls.forEach(ioc => {
+            let tr = document.createElement('tr');
+            tr.className = "border-b border-gray-700 hover:bg-gray-700 transition";
+            
+            let classColor = "text-gray-400";
+            if (ioc.classification === "MALICIOUS") classColor = "text-red-500 font-bold";
+            if (ioc.classification === "SUSPICIOUS") classColor = "text-yellow-500 font-bold";
+            if (ioc.classification === "BENIGN") classColor = "text-green-500 font-bold";
+            
+            tr.innerHTML = `
+                <td class="px-3 py-2 font-mono text-blue-400 break-all max-w-[200px]">${ioc.value}</td>
+                <td class="px-3 py-2">${ioc.type}</td>
+                <td class="px-3 py-2 ${classColor}">${ioc.classification}</td>
+                <td class="px-3 py-2">${ioc.confidence}</td>
+                <td class="px-3 py-2 text-gray-400 italic">${ioc.reason}</td>
+            `;
+            iocTable.appendChild(tr);
         });
     } else {
-        iocList.innerHTML = `<div class="text-xs text-gray-500 italic">No suspicious IOCs extracted</div>`;
+        iocTable.innerHTML = `<tr><td colspan="5" class="px-3 py-2 text-center text-gray-500 italic">No IOCs extracted</td></tr>`;
     }
 
     // 7. GeoLocation Traceability & Infrastructure
@@ -151,12 +171,13 @@ function populateDashboard(data) {
     // Show Dashboard
     document.getElementById('resultsDashboard').classList.remove('hidden');
     document.getElementById('downloadReportBtn').classList.remove('hidden');
+    document.getElementById('downloadPdfBtn').classList.remove('hidden');
 
     currentReportData = data;
 
     // Render Visuals
     renderMap(data.origin_traceability);
-    renderGraph(data.metadata, data.origin_traceability);
+    renderGraph(data.metadata, data.origin_traceability, data.authentication, data.iocs);
 }
 
 // --- Map Logic ---
@@ -231,15 +252,69 @@ document.getElementById('downloadReportBtn').addEventListener('click', () => {
     window.URL.revokeObjectURL(url);
 });
 
+document.getElementById('downloadPdfBtn').addEventListener('click', () => {
+    if (!currentReportData || !window.jspdf) {
+        alert("PDF generator not ready or no data.");
+        return;
+    }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("FRAUDGUARD AI - FORENSIC REPORT", 10, 20);
+    
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`CASE ID: ${currentReportData.case_id}`, 10, 30);
+    doc.text(`EVIDENCE SHA-256: ${currentReportData.evidence.sha256}`, 10, 35);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text("--- 1. SCORING ---", 10, 45);
+    doc.setFont("helvetica", "normal");
+    doc.text(`FRAUD RISK: ${currentReportData.scoring.fraud_risk.score}% (${currentReportData.scoring.fraud_risk.level})`, 10, 52);
+    doc.text(`ORIGIN CONFIDENCE: ${currentReportData.scoring.origin_confidence.score}%`, 10, 57);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text("--- 2. AUTHENTICATION ---", 10, 67);
+    doc.setFont("helvetica", "normal");
+    doc.text(`SPF: ${currentReportData.authentication.spf}`, 10, 74);
+    doc.text(`DKIM: ${currentReportData.authentication.dkim}`, 10, 79);
+    doc.text(`DMARC: ${currentReportData.authentication.dmarc}`, 10, 84);
+    doc.text(`Alignment: ${currentReportData.authentication.alignment}`, 10, 89);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text("--- 3. IOCs ---", 10, 99);
+    doc.setFont("helvetica", "normal");
+    
+    let y = 106;
+    if (currentReportData.iocs.urls && currentReportData.iocs.urls.length > 0) {
+        currentReportData.iocs.urls.forEach(u => {
+            doc.text(`[${u.classification}] ${u.value.substring(0, 80)}`, 10, y);
+            y += 5;
+            if(y > 280) { doc.addPage(); y = 20; }
+        });
+    } else {
+        doc.text("No URLs Extracted.", 10, y);
+    }
+    
+    doc.save(`Forensic_Report_${currentReportData.case_id}.pdf`);
+});
+
 // --- Graph Logic ---
 let network = null;
 
-function renderGraph(metadata, geoData) {
+function renderGraph(metadata, geoData, authData, iocData) {
     let nodes = new vis.DataSet([
         { id: 'email', label: 'Email Node\\n' + metadata.from, shape: 'box', color: { background: '#ef4444', border: '#b91c1c' }, font: { color: 'white' } }
     ]);
     let edges = new vis.DataSet([]);
     
+    // Auth Nodes
+    nodes.add({ id: 'auth_spf', label: 'SPF\\n' + authData.spf, shape: 'diamond', color: { background: '#f59e0b', border: '#b45309' }, font: { color: 'white' } });
+    edges.add({ from: 'email', to: 'auth_spf', label: 'validates', color: '#6b7280', font: { color: '#9ca3af', size: 10 } });
+    
+    // IP Trace
     let ipCount = 1;
     geoData.forEach(geo => {
         let ipId = 'ip_' + ipCount;
@@ -253,6 +328,19 @@ function renderGraph(metadata, geoData) {
         }
         ipCount++;
     });
+
+    // IOC Trace
+    let urlCount = 1;
+    if (iocData && iocData.urls) {
+        iocData.urls.forEach(u => {
+            if (u.classification === "MALICIOUS" || u.classification === "SUSPICIOUS") {
+                let uId = 'url_' + urlCount;
+                nodes.add({ id: uId, label: 'URL\\n' + u.domain, shape: 'star', color: { background: '#9333ea', border: '#7e22ce' }, font: { color: 'white' } });
+                edges.add({ from: 'email', to: uId, label: 'contains', color: '#6b7280', font: { color: '#9ca3af', size: 10 } });
+                urlCount++;
+            }
+        });
+    }
 
     let container = document.getElementById('networkGraph');
     let data = { nodes: nodes, edges: edges };

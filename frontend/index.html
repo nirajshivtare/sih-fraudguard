@@ -20,9 +20,15 @@
     <!-- Navbar -->
     <nav class="bg-gray-800 border-b border-gray-700 p-4">
         <div class="container mx-auto flex items-center">
+            <i class="fa-solid fa-shield-halved text-blue-500 text-2xl mr-3"></i>
+            <h1 class="text-xl font-bold tracking-wider">FraudGuard <span class="text-blue-500">AI</span></h1>
+            <span class="ml-4 text-xs bg-blue-900 text-blue-200 px-2 py-1 rounded-full">PS-106 Forensic Platform</span>
             <span id="caseIdBadge" class="ml-auto text-xs bg-gray-700 text-gray-300 px-3 py-1 rounded border border-gray-600 font-mono">CASE ID: PENDING</span>
-            <button id="downloadReportBtn" class="hidden ml-4 bg-green-600 hover:bg-green-700 text-white text-xs font-bold py-1 px-3 rounded shadow transition duration-200">
-                <i class="fa-solid fa-download mr-1"></i>Report
+            <button id="downloadPdfBtn" class="hidden ml-4 bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-3 rounded shadow transition duration-200">
+                <i class="fa-solid fa-file-pdf mr-1"></i>PDF
+            </button>
+            <button id="downloadReportBtn" class="hidden ml-2 bg-green-600 hover:bg-green-700 text-white text-xs font-bold py-1 px-3 rounded shadow transition duration-200">
+                <i class="fa-solid fa-file-lines mr-1"></i>TXT
             </button>
         </div>
     </nav>
@@ -76,14 +82,6 @@
                         <!-- Populated via JS -->
                     </ul>
                 </div>
-                
-                <!-- IOCs -->
-                <div class="bg-gray-800 rounded-lg p-4 border border-gray-700 shadow-lg">
-                    <h3 class="text-gray-400 text-xs uppercase tracking-wider mb-4"><i class="fa-solid fa-link text-blue-400 mr-2"></i>Extracted IOCs</h3>
-                    <div id="iocList" class="space-y-1">
-                        <!-- Populated via JS -->
-                    </div>
-                </div>
             </div>
 
             <!-- Middle/Right Column: Details & Geo -->
@@ -92,13 +90,21 @@
                 <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 shadow-lg grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <h3 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2"><i class="fa-solid fa-envelope text-gray-400 mr-2"></i>Email Metadata</h3>
-                        <div class="grid grid-cols-4 gap-2 text-sm">
+                        <div class="grid grid-cols-4 gap-2 text-xs">
                             <div class="col-span-1 text-gray-400">From:</div>
-                            <div class="col-span-3 font-mono text-red-400" id="metaFrom">-</div>
+                            <div class="col-span-3 font-mono text-red-400 truncate" id="metaFrom">-</div>
                             <div class="col-span-1 text-gray-400">To:</div>
-                            <div class="col-span-3 font-mono" id="metaTo">-</div>
+                            <div class="col-span-3 font-mono truncate" id="metaTo">-</div>
                             <div class="col-span-1 text-gray-400">Subject:</div>
-                            <div class="col-span-3 font-bold" id="metaSubject">-</div>
+                            <div class="col-span-3 font-bold truncate" id="metaSubject">-</div>
+                            <div class="col-span-1 text-gray-400 mt-2">Msg-ID:</div>
+                            <div class="col-span-3 font-mono truncate text-gray-400 mt-2" id="metaMsgId">-</div>
+                            <div class="col-span-1 text-gray-400">Return:</div>
+                            <div class="col-span-3 font-mono truncate text-gray-400" id="metaReturn">-</div>
+                            <div class="col-span-1 text-gray-400">X-Mailer:</div>
+                            <div class="col-span-3 font-mono truncate text-gray-400" id="metaMailer">-</div>
+                            <div class="col-span-1 text-gray-400">X-Orig-IP:</div>
+                            <div class="col-span-3 font-mono text-gray-400" id="metaOrigIp">-</div>
                         </div>
                     </div>
                     <div>
@@ -111,6 +117,27 @@
                             <div class="col-span-1 text-gray-400">Created:</div>
                             <div class="col-span-3" id="whoisCreated">-</div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- IOCs Table -->
+                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 shadow-lg">
+                    <h3 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2"><i class="fa-solid fa-link text-blue-400 mr-2"></i>Extracted IOCs & Classification</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="text-gray-400 uppercase bg-gray-700">
+                                <tr>
+                                    <th class="px-3 py-2">IOC Value</th>
+                                    <th class="px-3 py-2">Type</th>
+                                    <th class="px-3 py-2">Classification</th>
+                                    <th class="px-3 py-2">Confidence</th>
+                                    <th class="px-3 py-2">Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody id="iocTableBody">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -154,7 +181,7 @@
                 
                 <!-- Graph -->
                 <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 shadow-lg">
-                    <h3 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2"><i class="fa-solid fa-diagram-project text-purple-400 mr-2"></i>Attribution Graph (Domain -> IP)</h3>
+                    <h3 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2"><i class="fa-solid fa-diagram-project text-purple-400 mr-2"></i>Threat Correlation Graph</h3>
                     <div id="networkGraph" style="height: 350px;" class="rounded bg-gray-900 border border-gray-700"></div>
                 </div>
             </div>
@@ -162,6 +189,7 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
